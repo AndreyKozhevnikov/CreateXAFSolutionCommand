@@ -1,8 +1,11 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿using DevExpress.ExpressApp.TemplateWizard;
+using DevExpress.VisualStudioInterop.Base;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.ComponentModel.Design;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
@@ -85,6 +88,49 @@ namespace CreateXAFSolutionCommand {
             string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
             string title = "MyCreateXAFCommand";
 
+
+           // EnvDTE.DTE dte = LaunchVsDte(isPreRelease: false);
+            NewXafSolutionWizard wz = new NewXafSolutionWizard();
+            var model = new SolutionModel();
+            string mySolutionName= "MyNewXAFSolution5";
+            model.ApplicationName = mySolutionName;
+            model.FullXafVersion = "21.2.0.0";
+            model.AuthenticationIsStandard = true;
+            model.BlazorMode = true;
+            model.BlazorPlatformSelected = true;
+            model.ClientLevelIntegratedSelected = true;
+            model.HasXafLicense = true;
+            model.Lang = DevExpress.VisualStudioInterop.Base.Language.CSharp;
+            model.MainModuleClassName = "Module";
+            model.MainModuleNamespace = mySolutionName+".Module";
+            model.NetCoreMode = true;
+            model.OrmIsXpo = true;
+            model.CollectModules(true);
+            model.WebApiPlatformSelected = false;
+            var m1 = model.AllModules.Where(x => x is BusinessClassLibraryCustomizationModuleInfo).First();
+            ((ISelectable)m1).Selected = true;
+
+            var m2 = model.AllModules.Where(x => x is ConditionalAppearanceModuleInfo).First();
+            ((ISelectable)m2).Selected = true;
+
+            var m3 = model.AllModules.Where(x => x is OfficeModuleInfo).First();
+            ((ISelectable)m3).Selected = true;
+
+            var m4 = model.AllModules.Where(x => x is ValidationModuleInfo).First();
+            ((ISelectable)m4).Selected = true;
+
+            model.SolutionName = mySolutionName;
+
+            model.TargetFrameworkVersion = "4.5.2";
+            model.UseSecurity = true;
+            model.VSVersion = "17.0";
+            model.XafVersion = "21.2";
+            wz.SetModel(model);
+            var dxDte = VisualStudioInterop.GetDTE(dte); ;
+            wz.SetDTE(dxDte);
+            wz.SetBaseDirectory(@"c:\!Tickets\!Test\"+ mySolutionName);
+            //wz.mo
+            wz.RunFinished();
             // Show a message box to prove we were here
             VsShellUtilities.ShowMessageBox(
                 this.package,
