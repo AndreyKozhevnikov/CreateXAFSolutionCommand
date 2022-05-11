@@ -55,6 +55,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="DevExpress.ExpressApp.TemplateWizard.v22.1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=79868b8147b5eae4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\DevExpress.ExpressApp.TemplateWizard.v22.1\v4.0_1.0.0.0__79868b8147b5eae4\DevExpress.ExpressApp.TemplateWizard.v22.1.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.VisualStudioInterop.v22.1.Base, Version=22.1.0.0, Culture=neutral, PublicKeyToken=79868b8147b5eae4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\DevExpress.VisualStudioInterop.v22.1.Base\v4.0_22.1.0.0__79868b8147b5eae4\DevExpress.VisualStudioInterop.v22.1.Base.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Data" />

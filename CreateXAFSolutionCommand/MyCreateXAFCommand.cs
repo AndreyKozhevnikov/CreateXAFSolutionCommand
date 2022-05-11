@@ -101,8 +101,8 @@ namespace CreateXAFSolutionCommand {
             model.ClientLevelIntegratedSelected = true;
             model.HasXafLicense = true;
             model.Lang = DevExpress.VisualStudioInterop.Base.Language.CSharp;
-            model.MainModuleClassName = "Module";
-            model.MainModuleNamespace = mySolutionName+".Module";
+            //model.MainModuleClassName = "Module";
+            //model.MainModuleNamespace = mySolutionName+".Module";
             model.NetCoreMode = true;
             model.OrmIsXpo = true;
             model.CollectModules(true);
