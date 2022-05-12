@@ -92,7 +92,7 @@ namespace CreateXAFSolutionCommand {
            // EnvDTE.DTE dte = LaunchVsDte(isPreRelease: false);
             NewXafSolutionWizard wz = new NewXafSolutionWizard();
             var model = new SolutionModel();
-            string mySolutionName= "MyNewXAFSolution5";
+            string mySolutionName= "MyNewXAFSolution6";
             model.ApplicationName = mySolutionName;
             model.FullXafVersion = "21.2.0.0";
             model.AuthenticationIsStandard = true;
