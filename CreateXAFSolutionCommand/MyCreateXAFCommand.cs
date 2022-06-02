@@ -6,6 +6,7 @@ using System;
 using System.ComponentModel.Design;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
@@ -89,18 +90,19 @@ namespace CreateXAFSolutionCommand {
             string title = "MyCreateXAFCommand";
 
 
-           // EnvDTE.DTE dte = LaunchVsDte(isPreRelease: false);
+            // EnvDTE.DTE dte = LaunchVsDte(isPreRelease: false);
             NewXafSolutionWizard wz = new NewXafSolutionWizard();
             var model = new SolutionModel();
-            string mySolutionName= "MyNewXAFSolution6";
+            string mySolutionName = "MyNewXAFSolution7";
             model.ApplicationName = mySolutionName;
             model.FullXafVersion = "21.2.0.0";
             model.AuthenticationIsStandard = true;
             model.BlazorMode = true;
             model.BlazorPlatformSelected = true;
             model.ClientLevelIntegratedSelected = true;
-            model.HasXafLicense = true;
+            // model.HasXafLicense = true;
             model.Lang = DevExpress.VisualStudioInterop.Base.Language.CSharp;
+
             //model.MainModuleClassName = "Module";
             //model.MainModuleNamespace = mySolutionName+".Module";
             model.NetCoreMode = true;
@@ -125,10 +127,20 @@ namespace CreateXAFSolutionCommand {
             model.UseSecurity = true;
             model.VSVersion = "17.0";
             model.XafVersion = "21.2";
-            wz.SetModel(model);
-            var dxDte = VisualStudioInterop.GetDTE(dte); ;
-            wz.SetDTE(dxDte);
-            wz.SetBaseDirectory(@"c:\!Tickets\!Test\"+ mySolutionName);
+            var dxDte = VisualStudioInterop.GetDTE(dte);
+            Type vs = typeof(NewXafSolutionWizard);
+
+            FieldInfo r_dte = vs.GetField("dte", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            r_dte.SetValue(wz, dxDte);
+
+            FieldInfo r_model = vs.GetField("model", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            r_model.SetValue(wz, model);
+
+            FieldInfo r_baseDirectory = vs.GetField("baseDirectory", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            r_baseDirectory.SetValue(wz, @"c:\!Tickets\!Test\" + mySolutionName);
+            //wz.SetModel(model);
+            // wz.SetDTE(dxDte);
+            //            wz.SetBaseDirectory(@"c:\!Tickets\!Test\"+ mySolutionName);
             //wz.mo
             wz.RunFinished();
             // Show a message box to prove we were here
