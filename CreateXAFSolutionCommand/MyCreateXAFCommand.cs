@@ -4,6 +4,7 @@ using DevExpress.VisualStudioInterop.Base;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Globalization;
 using System.IO;
@@ -163,7 +164,11 @@ namespace CreateXAFSolutionCommand {
             //            wz.SetBaseDirectory(@"c:\!Tickets\!Test\"+ mySolutionName);
             //wz.mo
             wz.RunFinished();
-            dte.Solution.SaveAs(solutionDirectory + ".sln");
+            dte.Solution.SaveAs(Path.Combine(solutionDirectory, mySolutionName + ".sln"));
+            var prs = dte.ActiveSolutionProjects;
+            CopyClasses(solutionDirectory, mySolutionName, dataSolution);
+            AddUpdaterToSolution(solutionDirectory, mySolutionName);
+            FixConfig(solutionDirectory, mySolutionName, dataSolution);
             // Show a message box to prove we were here
             VsShellUtilities.ShowMessageBox(
                 this.package,
@@ -172,6 +177,62 @@ namespace CreateXAFSolutionCommand {
                 OLEMSGICON.OLEMSGICON_INFO,
                 OLEMSGBUTTON.OLEMSGBUTTON_OK,
                 OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+        }
+
+        public void CopyClasses(string folderName, string solutionName, DataForSolution dataSolution) {
+            var boFolderPath = Path.Combine(folderName, solutionName + ".Module", "BusinessObjects");
+            var sourceSolutionPath = @"c:\Dropbox\work\Templates\MainSolution\dxTestSolution(Secur)\";
+
+            var fileNames = new List<string>();
+            fileNames.Add("Contact.cs");
+            fileNames.Add("MyTask.cs");
+            fileNames.Add("CustomClass.cs");
+            foreach(string file in fileNames) {
+                File.Copy(Path.Combine(sourceSolutionPath, @"dxTestSolution.Module\BusinessObjects", file), Path.Combine(boFolderPath, file));
+            }
+            File.Copy(Path.Combine(sourceSolutionPath, @"dxTestSolution.Module\BusinessObjects\Updater.cs"), Path.Combine(folderName, solutionName + @".Module\DatabaseUpdate\MyUpdater.cs"));
+            File.Copy(Path.Combine(sourceSolutionPath, @"dxTestSolution.Module\Controllers\CustomControllers.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\CustomControllers.cs"));
+
+
+
+            if(dataSolution.Modules.Contains(ModulesEnum.Report)) {
+                File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\ClearReportCacheController.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\ClearReportCacheController.cs"));
+            }
+            if(dataSolution.Modules.Contains(ModulesEnum.Office)) {
+                File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\ClearMailMergeCacheController.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\ClearMailMergeCacheController.cs"));
+            }
+        }
+        public void AddUpdaterToSolution(string folderName, string solutionName) {
+            var updaterPath = Path.Combine(folderName, solutionName + @".Module\Module.cs");
+            string text = File.ReadAllText(updaterPath);
+            text = text.Replace("using DevExpress.ExpressApp;", "using DevExpress.ExpressApp;\r\nusing dxTestSolution.Module.DatabaseUpdate;");
+            text = text.Replace("return new ModuleUpdater[] { updater };", "return new ModuleUpdater[] { updater, new MyUpdater(objectSpace,versionFromDB) };");
+            File.WriteAllText(updaterPath, text);
+        }
+        public void FixConfig(string folderName, string solutionName, DataForSolution dataSolution) {
+            string configFileName;
+            string configPath = "";
+            switch(dataSolution.Type) {
+                case ProjectTypeEnum.Blazor:
+                    configFileName = "appsettings.json";
+                    configPath = Path.Combine(folderName, solutionName + ".Blazor.Server", configFileName);
+                    break;
+                case ProjectTypeEnum.Web:
+                    configFileName = "web.config";
+                    configPath = Path.Combine(folderName, solutionName + ".Web", configFileName);
+                    break;
+                case ProjectTypeEnum.Win:
+                case ProjectTypeEnum.WinCore:
+                    configFileName = "win.config";
+                    configPath = Path.Combine(folderName, solutionName + ".Win", configFileName);
+                    break;
+            }
+
+            string text = File.ReadAllText(configPath);
+            string intialText = "Initial Catalog=" + solutionName;
+            string newText = string.Format("Initial Catalog=d{0}-{1}", DateTime.Today.DayOfYear, solutionName);
+            text = text.Replace(intialText, newText);
+            File.WriteAllText(configPath, text);
         }
         public T DeserializeToObject<T>(string filepath) where T : class {
             System.Xml.Serialization.XmlSerializer ser = new System.Xml.Serialization.XmlSerializer(typeof(T));
