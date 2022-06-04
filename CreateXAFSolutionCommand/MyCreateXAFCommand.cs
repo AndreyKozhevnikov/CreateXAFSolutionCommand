@@ -1,10 +1,12 @@
-﻿using DevExpress.ExpressApp.TemplateWizard;
+﻿using DataForSolutionNameSpace;
+using DevExpress.ExpressApp.TemplateWizard;
 using DevExpress.VisualStudioInterop.Base;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.ComponentModel.Design;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -92,14 +94,25 @@ namespace CreateXAFSolutionCommand {
 
             // EnvDTE.DTE dte = LaunchVsDte(isPreRelease: false);
             NewXafSolutionWizard wz = new NewXafSolutionWizard();
+
+            var solutionDataFileName = @"c:\solutiondata\data.xml";
+            DataForSolution dataSolution = DeserializeToObject<DataForSolution>(solutionDataFileName);
+
             var model = new SolutionModel();
-            string mySolutionName = "MyNewXAFSolution7";
+            string mySolutionName = dataSolution.Name;
             model.ApplicationName = mySolutionName;
             model.FullXafVersion = "21.2.0.0";
-            model.AuthenticationIsStandard = true;
-            model.BlazorMode = true;
-            model.BlazorPlatformSelected = true;
-            model.ClientLevelIntegratedSelected = true;
+            model.XafVersion = "21.2";
+            if(dataSolution.HasSecurity) {
+                model.AuthenticationIsStandard = true;
+                model.ClientLevelIntegratedSelected = true;
+                model.UseSecurity = true;
+            }
+            if(dataSolution.Type == ProjectTypeEnum.Blazor) {
+                model.BlazorMode = true;
+                model.BlazorPlatformSelected = true;
+            }
+
             // model.HasXafLicense = true;
             model.Lang = DevExpress.VisualStudioInterop.Base.Language.CSharp;
 
@@ -109,24 +122,30 @@ namespace CreateXAFSolutionCommand {
             model.OrmIsXpo = true;
             model.CollectModules(true);
             model.WebApiPlatformSelected = false;
-            var m1 = model.AllModules.Where(x => x is BusinessClassLibraryCustomizationModuleInfo).First();
-            ((ISelectable)m1).Selected = true;
 
-            var m2 = model.AllModules.Where(x => x is ConditionalAppearanceModuleInfo).First();
-            ((ISelectable)m2).Selected = true;
 
-            var m3 = model.AllModules.Where(x => x is OfficeModuleInfo).First();
-            ((ISelectable)m3).Selected = true;
-
-            var m4 = model.AllModules.Where(x => x is ValidationModuleInfo).First();
-            ((ISelectable)m4).Selected = true;
-
+            if(dataSolution.Modules.Contains(ModulesEnum.ConditionalAppearance)) {
+                var m2 = model.AllModules.Where(x => x is ConditionalAppearanceModuleInfo).First();
+                ((ISelectable)m2).Selected = true;
+            }
+            if(dataSolution.Modules.Contains(ModulesEnum.Office)) {
+                var m3 = model.AllModules.Where(x => x is OfficeModuleInfo).First();
+                ((ISelectable)m3).Selected = true;
+            }
+            if(dataSolution.Modules.Contains(ModulesEnum.Validation)) {
+                var m4 = model.AllModules.Where(x => x is ValidationModuleInfo).First();
+                ((ISelectable)m4).Selected = true;
+            }
+            if(dataSolution.Modules.Contains(ModulesEnum.Report)) {
+                var m4 = model.AllModules.Where(x => x is ReportModuleInfo).First();
+                ((ISelectable)m4).Selected = true;
+            }
             model.SolutionName = mySolutionName;
 
             model.TargetFrameworkVersion = "4.5.2";
-            model.UseSecurity = true;
+
             model.VSVersion = "17.0";
-            model.XafVersion = "21.2";
+
             var dxDte = VisualStudioInterop.GetDTE(dte);
             Type vs = typeof(NewXafSolutionWizard);
 
@@ -137,12 +156,14 @@ namespace CreateXAFSolutionCommand {
             r_model.SetValue(wz, model);
 
             FieldInfo r_baseDirectory = vs.GetField("baseDirectory", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
-            r_baseDirectory.SetValue(wz, @"c:\!Tickets\!Test\" + mySolutionName);
+            var solutionDirectory = Path.Combine(@"c:\!Tickets\", dataSolution.FolderName, dataSolution.Name);
+            r_baseDirectory.SetValue(wz, solutionDirectory);
             //wz.SetModel(model);
             // wz.SetDTE(dxDte);
             //            wz.SetBaseDirectory(@"c:\!Tickets\!Test\"+ mySolutionName);
             //wz.mo
             wz.RunFinished();
+            dte.Solution.SaveAs(solutionDirectory + ".sln");
             // Show a message box to prove we were here
             VsShellUtilities.ShowMessageBox(
                 this.package,
@@ -151,6 +172,13 @@ namespace CreateXAFSolutionCommand {
                 OLEMSGICON.OLEMSGICON_INFO,
                 OLEMSGBUTTON.OLEMSGBUTTON_OK,
                 OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+        }
+        public T DeserializeToObject<T>(string filepath) where T : class {
+            System.Xml.Serialization.XmlSerializer ser = new System.Xml.Serialization.XmlSerializer(typeof(T));
+
+            using(StreamReader sr = new StreamReader(filepath)) {
+                return (T)ser.Deserialize(sr);
+            }
         }
     }
 }
