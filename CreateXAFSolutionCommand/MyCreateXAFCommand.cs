@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -109,17 +110,20 @@ namespace CreateXAFSolutionCommand {
                 model.ClientLevelIntegratedSelected = true;
                 model.UseSecurity = true;
             }
-            if(dataSolution.Type == ProjectTypeEnum.Blazor) {
-                model.BlazorMode = true;
-                model.BlazorPlatformSelected = true;
+            switch(dataSolution.Type) {
+                case ProjectTypeEnum.Core:
+                    model.BlazorMode = true;
+                    model.BlazorPlatformSelected = true;
+                    model.WinPlatformSelected = true;
+                    model.NetCoreMode = true;
+                    break;
+                case ProjectTypeEnum.Framework:
+                    model.WinPlatformSelected = true;
+                    model.WebPlatformSelected = true;
+                    model.NetCoreMode = false;
+                    break;
             }
-
-            // model.HasXafLicense = true;
             model.Lang = DevExpress.VisualStudioInterop.Base.Language.CSharp;
-
-            //model.MainModuleClassName = "Module";
-            //model.MainModuleNamespace = mySolutionName+".Module";
-            model.NetCoreMode = true;
             model.OrmIsXpo = true;
             model.CollectModules(true);
             model.WebApiPlatformSelected = false;
@@ -127,6 +131,10 @@ namespace CreateXAFSolutionCommand {
 
             if(dataSolution.Modules.Contains(ModulesEnum.ConditionalAppearance)) {
                 var m2 = model.AllModules.Where(x => x is ConditionalAppearanceModuleInfo).First();
+                ((ISelectable)m2).Selected = true;
+            }
+            if(dataSolution.Modules.Contains(ModulesEnum.FileAttachments)) {
+                var m2 = model.AllModules.Where(x => x is FileAttachmentsModuleInfo).First();
                 ((ISelectable)m2).Selected = true;
             }
             if(dataSolution.Modules.Contains(ModulesEnum.Office)) {
@@ -169,6 +177,7 @@ namespace CreateXAFSolutionCommand {
             CopyClasses(solutionDirectory, mySolutionName, dataSolution);
             AddUpdaterToSolution(solutionDirectory, mySolutionName);
             FixConfig(solutionDirectory, mySolutionName, dataSolution);
+            CreateGit(solutionDirectory);
             // Show a message box to prove we were here
             VsShellUtilities.ShowMessageBox(
                 this.package,
@@ -181,26 +190,33 @@ namespace CreateXAFSolutionCommand {
 
         public void CopyClasses(string folderName, string solutionName, DataForSolution dataSolution) {
             var boFolderPath = Path.Combine(folderName, solutionName + ".Module", "BusinessObjects");
-            var sourceSolutionPath = @"c:\Dropbox\work\Templates\MainSolution\dxTestSolution(Secur)\";
+            var sourceSolutionPath = @"c:\Dropbox\work\Templates\MainSolution\FilesToCreateSolution\";
 
             var fileNames = new List<string>();
             fileNames.Add("Contact.cs");
             fileNames.Add("MyTask.cs");
             fileNames.Add("CustomClass.cs");
             foreach(string file in fileNames) {
-                File.Copy(Path.Combine(sourceSolutionPath, @"dxTestSolution.Module\BusinessObjects", file), Path.Combine(boFolderPath, file));
+                File.Copy(Path.Combine(sourceSolutionPath, @"BusinessObjects", file), Path.Combine(boFolderPath, file));
             }
-            File.Copy(Path.Combine(sourceSolutionPath, @"dxTestSolution.Module\BusinessObjects\Updater.cs"), Path.Combine(folderName, solutionName + @".Module\DatabaseUpdate\MyUpdater.cs"));
-            File.Copy(Path.Combine(sourceSolutionPath, @"dxTestSolution.Module\Controllers\CustomControllers.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\CustomControllers.cs"));
+            File.Copy(Path.Combine(sourceSolutionPath, @"BusinessObjects\Updater.cs"), Path.Combine(folderName, solutionName + @".Module\DatabaseUpdate\MyUpdater.cs"));
+            File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllers.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\CustomControllers.cs"));
 
 
 
             if(dataSolution.Modules.Contains(ModulesEnum.Report)) {
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\ClearReportCacheController.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\ClearReportCacheController.cs"));
             }
-            if(dataSolution.Modules.Contains(ModulesEnum.Office)) {
-                File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\ClearMailMergeCacheController.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\ClearMailMergeCacheController.cs"));
-            }
+
+            File.Copy(Path.Combine(sourceSolutionPath, @"delbinobj.bat"), Path.Combine(folderName, @"delbinobj.bat"));
+            File.Copy(Path.Combine(sourceSolutionPath, @".gitignore"), Path.Combine(folderName, @".gitignore"));
+            File.Copy(Path.Combine(sourceSolutionPath, @"createGit.bat"), Path.Combine(folderName, @"createGit.bat"));
+
+            //if(dataSolution.Modules.Contains(ModulesEnum.Office)) {
+            //    File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\ClearMailMergeCacheController.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\ClearMailMergeCacheController.cs"));
+            //}
+
+
         }
         public void AddUpdaterToSolution(string folderName, string solutionName) {
             var updaterPath = Path.Combine(folderName, solutionName + @".Module\Module.cs");
@@ -210,30 +226,34 @@ namespace CreateXAFSolutionCommand {
             File.WriteAllText(updaterPath, text);
         }
         public void FixConfig(string folderName, string solutionName, DataForSolution dataSolution) {
-            string configFileName;
-            string configPath = "";
+            List<string> configFiles = new List<string>();
             switch(dataSolution.Type) {
-                case ProjectTypeEnum.Blazor:
-                    configFileName = "appsettings.json";
-                    configPath = Path.Combine(folderName, solutionName + ".Blazor.Server", configFileName);
+                case ProjectTypeEnum.Core:
+                    var configPath = Path.Combine(folderName, solutionName + ".Blazor.Server", "appsettings.json");
+                    configFiles.Add(configPath);
+                    var configPathWin = Path.Combine(folderName, solutionName + ".Win", "app.config");
+                    configFiles.Add(configPathWin);
                     break;
-                case ProjectTypeEnum.Web:
-                    configFileName = "web.config";
-                    configPath = Path.Combine(folderName, solutionName + ".Web", configFileName);
+                case ProjectTypeEnum.Framework:
+                    var webconfigPath = Path.Combine(folderName, solutionName + ".Web", "web.config");
+                    configFiles.Add(webconfigPath);
+                    var configPathWin2 = Path.Combine(folderName, solutionName + ".Win", "win.config");
+                    configFiles.Add(configPathWin2);
                     break;
-                case ProjectTypeEnum.Win:
-                case ProjectTypeEnum.WinCore:
-                    configFileName = "win.config";
-                    configPath = Path.Combine(folderName, solutionName + ".Win", configFileName);
-                    break;
-            }
 
-            string text = File.ReadAllText(configPath);
-            string intialText = "Initial Catalog=" + solutionName;
-            string newText = string.Format("Initial Catalog=d{0}-{1}", DateTime.Today.DayOfYear, solutionName);
-            text = text.Replace(intialText, newText);
-            File.WriteAllText(configPath, text);
+            }
+            foreach(var file in configFiles) {
+                string text = File.ReadAllText(file);
+                string intialText = "Initial Catalog=" + solutionName;
+                string newText = string.Format("Initial Catalog=d{0}-{1}", DateTime.Today.DayOfYear, solutionName);
+                text = text.Replace(intialText, newText);
+                File.WriteAllText(file, text);
+            }
         }
+        public void CreateGit(string folderName) {
+            Process.Start(Path.Combine(folderName, @"createGit.bat"));
+        }
+
         public T DeserializeToObject<T>(string filepath) where T : class {
             System.Xml.Serialization.XmlSerializer ser = new System.Xml.Serialization.XmlSerializer(typeof(T));
 
