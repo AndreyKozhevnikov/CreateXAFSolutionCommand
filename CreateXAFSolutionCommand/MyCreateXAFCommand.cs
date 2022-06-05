@@ -234,7 +234,7 @@ namespace CreateXAFSolutionCommand {
                 case ProjectTypeEnum.Framework:
                     var webconfigPath = Path.Combine(folderName, solutionName + ".Web", "web.config");
                     configFiles.Add(webconfigPath);
-                    var configPathWin2 = Path.Combine(folderName, solutionName + ".Win", "win.config");
+                    var configPathWin2 = Path.Combine(folderName, solutionName + ".Win", "app.config");
                     configFiles.Add(configPathWin2);
                     break;
 
