@@ -150,9 +150,7 @@ namespace CreateXAFSolutionCommand {
                 ((ISelectable)m4).Selected = true;
             }
             model.SolutionName = mySolutionName;
-
             model.TargetFrameworkVersion = "4.5.2";
-
             model.VSVersion = "17.0";
 
             var dxDte = VisualStudioInterop.GetDTE(dte);
@@ -167,13 +165,10 @@ namespace CreateXAFSolutionCommand {
             FieldInfo r_baseDirectory = vs.GetField("baseDirectory", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
             var solutionDirectory = Path.Combine(@"c:\!Tickets\", dataSolution.FolderName, dataSolution.Name);
             r_baseDirectory.SetValue(wz, solutionDirectory);
-            //wz.SetModel(model);
-            // wz.SetDTE(dxDte);
-            //            wz.SetBaseDirectory(@"c:\!Tickets\!Test\"+ mySolutionName);
-            //wz.mo
+           
             wz.RunFinished();
             dte.Solution.SaveAs(Path.Combine(solutionDirectory, mySolutionName + ".sln"));
-            var prs = dte.ActiveSolutionProjects;
+           
             CopyClasses(solutionDirectory, mySolutionName, dataSolution);
             AddUpdaterToSolution(solutionDirectory, mySolutionName);
             FixConfig(solutionDirectory, mySolutionName, dataSolution);
