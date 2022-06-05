@@ -167,10 +167,10 @@ namespace CreateXAFSolutionCommand {
             FieldInfo r_baseDirectory = vs.GetField("baseDirectory", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
             var solutionDirectory = Path.Combine(@"c:\!Tickets\", dataSolution.FolderName, dataSolution.Name);
             r_baseDirectory.SetValue(wz, solutionDirectory);
-           
+
             wz.RunFinished();
             dte.Solution.SaveAs(Path.Combine(solutionDirectory, mySolutionName + ".sln"));
-           
+
             CopyClasses(solutionDirectory, mySolutionName, dataSolution);
             AddUpdaterToSolution(solutionDirectory, mySolutionName);
             FixConfig(solutionDirectory, mySolutionName, dataSolution);
@@ -186,25 +186,40 @@ namespace CreateXAFSolutionCommand {
         }
 
         public void CopyClasses(string folderName, string solutionName, DataForSolution dataSolution) {
-            var boFolderPath = Path.Combine(folderName, solutionName + ".Module", "BusinessObjects");
+
+            List<String> addedFiles = new List<String>();
+            var modulePath = Path.Combine(folderName, solutionName + ".Module");
             var sourceSolutionPath = @"c:\Dropbox\work\Templates\MainSolution\FilesToCreateSolution\";
+            var csProjName = Path.Combine(folderName, solutionName + ".Module", solutionName + ".Module.csproj");
 
             var fileNames = new List<string>();
-            fileNames.Add("Contact.cs");
-            fileNames.Add("MyTask.cs");
-            fileNames.Add("CustomClass.cs");
+            fileNames.Add(@"BusinessObjects\Contact.cs");
+            fileNames.Add(@"BusinessObjects\MyTask.cs");
+            fileNames.Add(@"BusinessObjects\CustomClass.cs");
             foreach(string file in fileNames) {
-                File.Copy(Path.Combine(sourceSolutionPath, @"BusinessObjects", file), Path.Combine(boFolderPath, file));
-            }
-            File.Copy(Path.Combine(sourceSolutionPath, @"BusinessObjects\Updater.cs"), Path.Combine(folderName, solutionName + @".Module\DatabaseUpdate\MyUpdater.cs"));
-            File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllers.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\CustomControllers.cs"));
+                var filePath = Path.Combine(modulePath, file);
+                File.Copy(Path.Combine(sourceSolutionPath, file), filePath);
+                addedFiles.Add(file);
 
+            }
+
+            File.Copy(Path.Combine(sourceSolutionPath, @"BusinessObjects\Updater.cs"), Path.Combine(folderName, solutionName + @".Module\DatabaseUpdate\MyUpdater.cs"));
+            addedFiles.Add(@"DatabaseUpdate\MyUpdater.cs");
+            File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllers.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\CustomControllers.cs"));
+            addedFiles.Add(@"Controllers\CustomControllers.cs");
 
 
             if(dataSolution.Modules.Contains(ModulesEnum.Report)) {
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\ClearReportCacheController.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\ClearReportCacheController.cs"));
+                addedFiles.Add(@"Controllers\ClearReportCacheController.cs");
             }
-
+            if(dataSolution.Type == ProjectTypeEnum.Framework) {
+                //var p = new Microsoft.Build.Evaluation.Project(csProjName);
+                //foreach(var st in addedFiles) {
+                //    p.AddItem("Compile", st);
+                //}
+                //p.Save();
+            }
             File.Copy(Path.Combine(sourceSolutionPath, @"delbinobj.bat"), Path.Combine(folderName, @"delbinobj.bat"));
             File.Copy(Path.Combine(sourceSolutionPath, @".gitignore"), Path.Combine(folderName, @".gitignore"));
             File.Copy(Path.Combine(sourceSolutionPath, @"createGit.bat"), Path.Combine(folderName, @"createGit.bat"));
