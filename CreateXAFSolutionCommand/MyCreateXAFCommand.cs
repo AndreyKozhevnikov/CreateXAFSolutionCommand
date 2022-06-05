@@ -122,6 +122,8 @@ namespace CreateXAFSolutionCommand {
                     model.WebPlatformSelected = true;
                     model.NetCoreMode = false;
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
             model.Lang = DevExpress.VisualStudioInterop.Base.Language.CSharp;
             model.OrmIsXpo = true;
