@@ -197,6 +197,9 @@ namespace CreateXAFSolutionCommand {
 
             List<String> addedFiles = new List<String>();
             var modulePath = Path.Combine(folderName, solutionName + ".Module");
+            var moduleWinPath = Path.Combine(folderName, solutionName + ".Module.Win");
+            var moduleWebPath = Path.Combine(folderName, solutionName + ".Module.Web");
+            var moduleBlazorPath = Path.Combine(folderName, solutionName + ".Module.Blazor");
             var sourceSolutionPath = @"c:\Dropbox\work\Templates\MainSolution\FilesToCreateSolution\";
             var csProjName = Path.Combine(folderName, solutionName + ".Module", solutionName + ".Module.csproj");
 
@@ -231,12 +234,16 @@ namespace CreateXAFSolutionCommand {
             File.Copy(Path.Combine(sourceSolutionPath, @"delbinobj.bat"), Path.Combine(folderName, @"delbinobj.bat"));
             File.Copy(Path.Combine(sourceSolutionPath, @".gitignore"), Path.Combine(folderName, @".gitignore"));
             File.Copy(Path.Combine(sourceSolutionPath, @"createGit.bat"), Path.Combine(folderName, @"createGit.bat"));
-
-            //if(dataSolution.Modules.Contains(ModulesEnum.Office)) {
-            //    File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\ClearMailMergeCacheController.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\ClearMailMergeCacheController.cs"));
-            //}
-
-
+            switch(dataSolution.Type) {
+                case ProjectTypeEnum.Framework:
+                    File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWin.cs"), Path.Combine(moduleWinPath, @"Controllers\CustomControllerWin.cs"));
+                    File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWeb.cs"), Path.Combine(moduleWebPath, @"Controllers\CustomControllerWeb.cs"));
+                    break;
+                case ProjectTypeEnum.Core:
+                    File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWin.cs"), Path.Combine(moduleWinPath, @"Controllers\CustomControllerWin.cs"));
+                    File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerBlazor.cs"), Path.Combine(moduleBlazorPath, @"Controllers\CustomControllerBlazor.cs"));
+                    break;
+            }
         }
         public void AddUpdaterToSolution(string folderName, string solutionName) {
             var updaterPath = Path.Combine(folderName, solutionName + @".Module\Module.cs");
