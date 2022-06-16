@@ -56,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="DataForSolution">
-      <HintPath>..\..\DXTicketsBase\DXTicketBase\DataForSolution\bin\Debug\DataForSolution.dll</HintPath>
+      <HintPath>..\..\DXTicketsBase\DXTicketBase\DataForSolution\bin\Release\DataForSolution.dll</HintPath>
     </Reference>
     <Reference Include="DevExpress.ExpressApp.TemplateWizard.v21.2, Version=21.2.8.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

@@ -151,6 +151,14 @@ namespace CreateXAFSolutionCommand {
                 var m4 = model.AllModules.Where(x => x is ReportModuleInfo).First();
                 ((ISelectable)m4).Selected = true;
             }
+            if(dataSolution.Modules.Contains(ModulesEnum.Scheduler)) {
+                var m4 = model.AllModules.Where(x => x is SchedulerModuleInfo).First();
+                ((ISelectable)m4).Selected = true;
+            }
+            if(dataSolution.Modules.Contains(ModulesEnum.Dashboards)) {
+                var m4 = model.AllModules.Where(x => x is DashboardsModuleInfo).First();
+                ((ISelectable)m4).Selected = true;
+            }
             model.SolutionName = mySolutionName;
             model.TargetFrameworkVersion = "4.5.2";
             model.VSVersion = "17.0";
