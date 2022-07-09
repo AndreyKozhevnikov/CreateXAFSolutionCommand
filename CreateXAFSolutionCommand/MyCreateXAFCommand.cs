@@ -103,8 +103,8 @@ namespace CreateXAFSolutionCommand {
             var model = new SolutionModel();
             string mySolutionName = dataSolution.Name;
             model.ApplicationName = mySolutionName;
-            model.FullXafVersion = "21.2.0.0";
-            model.XafVersion = "21.2";
+            model.FullXafVersion = dataSolution.FullXAFVersion;
+            model.XafVersion = dataSolution.FullXAFVersion.Substring(0, 4);
             if(dataSolution.HasSecurity) {
                 model.AuthenticationIsStandard = true;
                 model.ClientLevelIntegratedSelected = true;
