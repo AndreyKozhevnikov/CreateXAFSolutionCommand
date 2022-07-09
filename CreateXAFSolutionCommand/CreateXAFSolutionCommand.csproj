@@ -45,6 +45,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Classes\ISolutionModel.cs" />
     <Compile Include="Classes\SolutionCreator.cs" />
     <Compile Include="MyCreateXAFCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

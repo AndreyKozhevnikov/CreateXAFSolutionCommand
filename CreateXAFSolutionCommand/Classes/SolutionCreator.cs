@@ -18,7 +18,7 @@ namespace CreateXAFSolutionCommand.Classes {
             var solutionDataFileName = @"c:\solutiondata\data.xml";
             DataForSolution dataSolution = DeserializeToObject<DataForSolution>(solutionDataFileName);
 
-            var model = new SolutionModel();
+            var model = new MySolutionModel();
             string mySolutionName = dataSolution.Name;
             model.ApplicationName = mySolutionName;
             model.FullXafVersion = dataSolution.FullXAFVersion;
@@ -78,7 +78,7 @@ namespace CreateXAFSolutionCommand.Classes {
         public void SetDTE(EnvDTE.DTE _dte) {
             dte = _dte;
         }
-        public void SelectModules(DataForSolution dataSolution, SolutionModel model) {
+        public void SelectModules(DataForSolution dataSolution, ISolutionModel model) {
             if(dataSolution.Modules.Contains(ModulesEnum.ConditionalAppearance)) {
                 var m2 = model.AllModules.Where(x => x is ConditionalAppearanceModuleInfo).First();
                 ((ISelectable)m2).Selected = true;
