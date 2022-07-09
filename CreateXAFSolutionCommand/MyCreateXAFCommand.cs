@@ -214,7 +214,7 @@ namespace CreateXAFSolutionCommand {
 
             }
 
-            File.Copy(Path.Combine(sourceSolutionPath, @"BusinessObjects\Updater.cs"), Path.Combine(folderName, solutionName + @".Module\DatabaseUpdate\MyUpdater.cs"));
+            File.Copy(Path.Combine(sourceSolutionPath, @"BusinessObjects\MyUpdater.cs"), Path.Combine(folderName, solutionName + @".Module\DatabaseUpdate\MyUpdater.cs"));
             addedFiles.Add(@"DatabaseUpdate\MyUpdater.cs");
             File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllers.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\CustomControllers.cs"));
             addedFiles.Add(@"Controllers\CustomControllers.cs");
