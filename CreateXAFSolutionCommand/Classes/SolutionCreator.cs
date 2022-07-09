@@ -65,9 +65,14 @@ namespace CreateXAFSolutionCommand.Classes {
             FieldInfo r_baseDirectory = vs.GetField("baseDirectory", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
             var solutionDirectory = Path.Combine(@"c:\!Tickets\", dataSolution.FolderName, dataSolution.Name);
             r_baseDirectory.SetValue(wz, solutionDirectory);
+            try {
+                wz.RunFinished();
+                dte.Solution.SaveAs(Path.Combine(solutionDirectory, mySolutionName + ".sln"));
+            }
+            catch(Exception e) {
 
-            wz.RunFinished();
-            dte.Solution.SaveAs(Path.Combine(solutionDirectory, mySolutionName + ".sln"));
+            }
+
 
             CopyClasses(solutionDirectory, mySolutionName, dataSolution);
             AddUpdaterToSolution(solutionDirectory, mySolutionName);
@@ -87,6 +92,8 @@ namespace CreateXAFSolutionCommand.Classes {
             modulesDictionary.Add(ModulesEnum.Validation, typeof(ValidationModuleInfo));
             modulesDictionary.Add(ModulesEnum.Scheduler, typeof(SchedulerModuleInfo));
             modulesDictionary.Add(ModulesEnum.Dashboards, typeof(DashboardsModuleInfo));
+            modulesDictionary.Add(ModulesEnum.AuditTrail, typeof(AuditTrailModuleInfo));
+            modulesDictionary.Add(ModulesEnum.TreeList, typeof(TreeListEditorsModuleInfo));
 
             foreach(var module in dataSolution.Modules) {
                 var moduleInfo = modulesDictionary[module];
