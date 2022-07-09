@@ -79,33 +79,20 @@ namespace CreateXAFSolutionCommand.Classes {
             dte = _dte;
         }
         public void SelectModules(DataForSolution dataSolution, ISolutionModel model) {
-            if(dataSolution.Modules.Contains(ModulesEnum.ConditionalAppearance)) {
-                var m2 = model.AllModules.Where(x => x is ConditionalAppearanceModuleInfo).First();
-                ((ISelectable)m2).Selected = true;
-            }
-            if(dataSolution.Modules.Contains(ModulesEnum.FileAttachments)) {
-                var m2 = model.AllModules.Where(x => x is FileAttachmentsModuleInfo).First();
-                ((ISelectable)m2).Selected = true;
-            }
-            if(dataSolution.Modules.Contains(ModulesEnum.Office)) {
-                var m3 = model.AllModules.Where(x => x is OfficeModuleInfo).First();
-                ((ISelectable)m3).Selected = true;
-            }
-            if(dataSolution.Modules.Contains(ModulesEnum.Validation)) {
-                var m4 = model.AllModules.Where(x => x is ValidationModuleInfo).First();
-                ((ISelectable)m4).Selected = true;
-            }
-            if(dataSolution.Modules.Contains(ModulesEnum.Report)) {
-                var m4 = model.AllModules.Where(x => x is ReportModuleInfo).First();
-                ((ISelectable)m4).Selected = true;
-            }
-            if(dataSolution.Modules.Contains(ModulesEnum.Scheduler)) {
-                var m4 = model.AllModules.Where(x => x is SchedulerModuleInfo).First();
-                ((ISelectable)m4).Selected = true;
-            }
-            if(dataSolution.Modules.Contains(ModulesEnum.Dashboards)) {
-                var m4 = model.AllModules.Where(x => x is DashboardsModuleInfo).First();
-                ((ISelectable)m4).Selected = true;
+            Dictionary<ModulesEnum, Type> modulesDictionary = new Dictionary<ModulesEnum, Type>();
+            modulesDictionary.Add(ModulesEnum.FileAttachments, typeof(FileAttachmentsModuleInfo));
+            modulesDictionary.Add(ModulesEnum.ConditionalAppearance, typeof(ConditionalAppearanceModuleInfo));
+            modulesDictionary.Add(ModulesEnum.Office, typeof(OfficeModuleInfo));
+            modulesDictionary.Add(ModulesEnum.Report, typeof(ReportModuleInfo));
+            modulesDictionary.Add(ModulesEnum.Validation, typeof(ValidationModuleInfo));
+            modulesDictionary.Add(ModulesEnum.Scheduler, typeof(SchedulerModuleInfo));
+            modulesDictionary.Add(ModulesEnum.Dashboards, typeof(DashboardsModuleInfo));
+
+            foreach(var module in dataSolution.Modules) {
+                var moduleInfo = modulesDictionary[module];
+                var realModule = model.AllModules.First(x => x.GetType() == moduleInfo);
+                ((ISelectable)realModule).Selected = true;
+
             }
         }
         public void CopyClasses(string folderName, string solutionName, DataForSolution dataSolution) {
