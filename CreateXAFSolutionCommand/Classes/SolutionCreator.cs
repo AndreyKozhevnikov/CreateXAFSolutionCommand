@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace CreateXAFSolutionCommand.Classes {
     public class SolutionCreator {
@@ -94,6 +95,9 @@ namespace CreateXAFSolutionCommand.Classes {
             modulesDictionary.Add(ModulesEnum.Dashboards, typeof(DashboardsModuleInfo));
             modulesDictionary.Add(ModulesEnum.AuditTrail, typeof(AuditTrailModuleInfo));
             modulesDictionary.Add(ModulesEnum.TreeList, typeof(TreeListEditorsModuleInfo));
+            modulesDictionary.Add(ModulesEnum.Notification, typeof(NotificationsModuleInfo));
+            modulesDictionary.Add(ModulesEnum.ViewVariant, typeof(ViewVariantsModuleInfo));
+            modulesDictionary.Add(ModulesEnum.StateMachine, typeof(StateMachineModuleInfo));
 
             foreach(var module in dataSolution.Modules) {
                 var moduleInfo = modulesDictionary[module];
@@ -104,13 +108,16 @@ namespace CreateXAFSolutionCommand.Classes {
         }
         public void CopyClasses(string folderName, string solutionName, DataForSolution dataSolution) {
 
-            List<String> addedFiles = new List<String>();
+            List<Tuple<String, string>> addedFiles = new List<Tuple<String, string>>();
             var modulePath = Path.Combine(folderName, solutionName + ".Module");
             var moduleWinPath = Path.Combine(folderName, solutionName + ".Module.Win");
             var moduleWebPath = Path.Combine(folderName, solutionName + ".Module.Web");
-            var moduleBlazorPath = Path.Combine(folderName, solutionName + ".Module.Blazor");
+            var moduleBlazorCorePath = Path.Combine(folderName, solutionName + ".Blazor.Server");
+            var moduleWinCorePath = Path.Combine(folderName, solutionName + ".Win");
             var sourceSolutionPath = @"c:\Dropbox\work\Templates\MainSolution\FilesToCreateSolution\";
-            var csProjName = Path.Combine(folderName, solutionName + ".Module", solutionName + ".Module.csproj");
+            var modulecsProjName = Path.Combine(folderName, solutionName + ".Module", solutionName + ".Module.csproj");
+            var wincsProjName = Path.Combine(folderName, solutionName + ".Module.Win", solutionName + ".Module.Win.csproj");
+            var webcsProjName = Path.Combine(folderName, solutionName + ".Module.Web", solutionName + ".Module.Web.csproj");
 
             var fileNames = new List<string>();
             fileNames.Add(@"BusinessObjects\Contact.cs");
@@ -119,34 +126,64 @@ namespace CreateXAFSolutionCommand.Classes {
             foreach(string file in fileNames) {
                 var filePath = Path.Combine(modulePath, file);
                 File.Copy(Path.Combine(sourceSolutionPath, file), filePath);
-                addedFiles.Add(file);
+                //  addedFiles.Add(file);
+                addedFiles.Add(new Tuple<string, string>(file, modulecsProjName));
 
             }
 
             File.Copy(Path.Combine(sourceSolutionPath, @"BusinessObjects\MyUpdater.cs"), Path.Combine(folderName, solutionName + @".Module\DatabaseUpdate\MyUpdater.cs"));
-            addedFiles.Add(@"DatabaseUpdate\MyUpdater.cs");
+            addedFiles.Add(new Tuple<string, string>(@"DatabaseUpdate\MyUpdater.cs", modulecsProjName));
             File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllers.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\CustomControllers.cs"));
-            addedFiles.Add(@"Controllers\CustomControllers.cs");
+            addedFiles.Add(new Tuple<string, string>(@"Controllers\CustomControllers.cs", modulecsProjName));
 
 
             if(dataSolution.Modules.Contains(ModulesEnum.Report)) {
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\ClearReportCacheController.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\ClearReportCacheController.cs"));
-                addedFiles.Add(@"Controllers\ClearReportCacheController.cs");
+                addedFiles.Add(new Tuple<string, string>(@"Controllers\ClearReportCacheController.cs", modulecsProjName));
             }
-            if(dataSolution.Type == ProjectTypeEnum.Framework) {
-                //var p = new Microsoft.Build.Evaluation.Project(csProjName);
-                //foreach(var st in addedFiles) {
-                //    p.AddItem("Compile", st);
-                //}
-                //p.Save();
-            }
+
             File.Copy(Path.Combine(sourceSolutionPath, @"delbinobj.bat"), Path.Combine(folderName, @"delbinobj.bat"));
             File.Copy(Path.Combine(sourceSolutionPath, @".gitignore"), Path.Combine(folderName, @".gitignore"));
             File.Copy(Path.Combine(sourceSolutionPath, @"createGit.bat"), Path.Combine(folderName, @"createGit.bat"));
             if(dataSolution.Type == ProjectTypeEnum.Framework) {
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWin.cs"), Path.Combine(moduleWinPath, @"Controllers\CustomControllerWin.cs"));
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWeb.cs"), Path.Combine(moduleWebPath, @"Controllers\CustomControllerWeb.cs"));
+                addedFiles.Add(new Tuple<string, string>(@"Controllers\CustomControllerWin.cs", wincsProjName));
+                addedFiles.Add(new Tuple<string, string>(@"Controllers\CustomControllerWeb.cs", webcsProjName));
             }
+            if(dataSolution.Type == ProjectTypeEnum.Core) {
+                File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWin.cs"), Path.Combine(moduleWinCorePath, @"Controllers\CustomControllerWin.cs"));
+                File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerBlazor.cs"), Path.Combine(moduleBlazorCorePath, @"Controllers\CustomControllerBlazor.cs"));
+            }
+            if(dataSolution.Type == ProjectTypeEnum.Framework) {
+                AddFilesToCSprojFiles(addedFiles);
+            }
+        }
+
+        void AddFilesToCSprojFiles(List<Tuple<string, string>> files) {
+            var csprojDict = new Dictionary<string, List<string>>();
+            foreach(var file in files) {
+                if(!csprojDict.ContainsKey(file.Item2)) {
+                    csprojDict[file.Item2] = new List<string>();
+                }
+                csprojDict[file.Item2].Add(file.Item1);
+            }
+
+            foreach(var csproj in csprojDict) {
+                var csprojName = csproj.Key;
+                var xFile = XDocument.Load(csprojName);
+                var itemGroups = xFile.Root.Elements().Where(x => x.Name.LocalName == "ItemGroup");
+                var itemGroup = itemGroups.Where(x => x.Elements().Where(y => y.Name.LocalName == "Compile").Count() > 0).FirstOrDefault();
+                var itemGroupFirstElement = itemGroup.Elements().First();
+                foreach(var file in csproj.Value) {
+                    var fileElement = new XElement(itemGroupFirstElement);
+                    fileElement.Attribute("Include").Value = file;
+                    itemGroup.Add(fileElement);
+                }
+
+                xFile.Save(csprojName);
+            }
+
         }
         public void AddUpdaterToSolution(string folderName, string solutionName) {
             var updaterPath = Path.Combine(folderName, solutionName + @".Module\Module.cs");
