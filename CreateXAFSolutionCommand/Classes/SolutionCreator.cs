@@ -148,8 +148,8 @@ namespace CreateXAFSolutionCommand.Classes {
             if(dataSolution.Type == ProjectTypeEnum.Framework) {
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWin.cs"), Path.Combine(moduleWinPath, @"Controllers\CustomControllerWin.cs"));
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWeb.cs"), Path.Combine(moduleWebPath, @"Controllers\CustomControllerWeb.cs"));
-                addedFiles.Add(new Tuple<string, string>(@"Controllers\CustomControllerWin.cs", wincsProjName));
-                addedFiles.Add(new Tuple<string, string>(@"Controllers\CustomControllerWeb.cs", webcsProjName));
+                //addedFiles.Add(new Tuple<string, string>(@"Controllers\CustomControllerWin.cs", wincsProjName));
+                //addedFiles.Add(new Tuple<string, string>(@"Controllers\CustomControllerWeb.cs", webcsProjName));
             }
             if(dataSolution.Type == ProjectTypeEnum.Core) {
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWin.cs"), Path.Combine(moduleWinCorePath, @"Controllers\CustomControllerWin.cs"));
@@ -180,7 +180,6 @@ namespace CreateXAFSolutionCommand.Classes {
                     fileElement.Attribute("Include").Value = file;
                     itemGroup.Add(fileElement);
                 }
-
                 xFile.Save(csprojName);
             }
 
