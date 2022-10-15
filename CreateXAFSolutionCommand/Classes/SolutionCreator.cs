@@ -119,6 +119,14 @@ namespace CreateXAFSolutionCommand.Classes {
             var wincsProjName = Path.Combine(folderName, solutionName + ".Module.Win", solutionName + ".Module.Win.csproj");
             var webcsProjName = Path.Combine(folderName, solutionName + ".Module.Web", solutionName + ".Module.Web.csproj");
 
+
+            //var suoPathSource = Path.Combine(sourceSolutionPath, @".vs\dxT1121016v5\v17\.suo");
+            //var suoPathTargetFolder = Path.Combine(folderName, @".vs", solutionName, @"v17");
+            //Directory.CreateDirectory(suoPathTargetFolder);
+            //var suoPathTarget = Path.Combine(suoPathTargetFolder, @".suo");
+            //File.Copy(suoPathSource, suoPathTarget);
+
+
             var fileNames = new List<string>();
             fileNames.Add(@"BusinessObjects\Contact.cs");
             fileNames.Add(@"BusinessObjects\MyTask.cs");
