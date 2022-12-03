@@ -221,6 +221,8 @@ namespace CreateXAFSolutionCommand.Classes {
         }
         public void FixConfig(string folderName, string solutionName, DataForSolution dataSolution) {
             List<string> configFiles = new List<string>();
+            string dataBaseName;
+            DataBaseCreatorLib.DataBaseCreator.CreateSQLDataBaseIfNotExists(solutionName, out dataBaseName);
             switch(dataSolution.Type) {
                 case ProjectTypeEnum.Core:
                     var configPath = Path.Combine(folderName, solutionName + ".Blazor.Server", "appsettings.json");
@@ -238,8 +240,8 @@ namespace CreateXAFSolutionCommand.Classes {
             }
             foreach(var file in configFiles) {
                 string text = File.ReadAllText(file);
-                string intialText = "Initial Catalog=" + solutionName;
-                string newText = string.Format("Initial Catalog=d{0}-{1}", DateTime.Today.DayOfYear, solutionName);
+                string intialText = string.Format("Initial Catalog={0}", solutionName);
+                string newText = string.Format("Initial Catalog={0}", dataBaseName);
                 text = text.Replace(intialText, newText);
                 File.WriteAllText(file, text);
             }
