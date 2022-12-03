@@ -23,8 +23,10 @@ namespace CreateXAFSolutionCommand.Classes {
             var model = new MySolutionModel();
             string mySolutionName = dataSolution.Name;
             model.ApplicationName = mySolutionName;
-            model.FullXafVersion = dataSolution.FullXAFVersion;
-            model.XafVersion = dataSolution.FullXAFVersion.Substring(0, 4);
+            var dxAssembly = Assembly.GetAssembly(typeof(DevExpress.VisualStudioInterop.Base.BuildAction));
+            var dxAssemblyVersion = dxAssembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+            model.FullXafVersion = dxAssemblyVersion;
+            model.XafVersion = dxAssemblyVersion.Substring(0, 4);
             if(dataSolution.HasSecurity) {
                 model.AuthenticationIsStandard = true;
                 model.ClientLevelIntegratedSelected = true;
