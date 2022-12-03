@@ -8,6 +8,8 @@ namespace CreateXAFSolutionCommand.Classes {
         ObservableCollection<IModuleInfo> AllModules { get; }
     }
     public class MySolutionModel : SolutionModel, ISolutionModel {
-
+       public MySolutionModel():base() {
+            OrmIsXpo = false;
+        }
     }
 }

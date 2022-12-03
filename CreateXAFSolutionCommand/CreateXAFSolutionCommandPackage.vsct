@@ -56,7 +56,7 @@
         <Parent guid="guidCreateXAFSolutionCommandPackageCmdSet" id="MyMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
         <Strings>
-          <ButtonText>Invoke MyCreateXAFCommand</ButtonText>
+          <ButtonText>==== MyCreateXAFCommand ====</ButtonText>
         </Strings>
       </Button>
     </Buttons>

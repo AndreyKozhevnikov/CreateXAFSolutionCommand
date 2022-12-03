@@ -13,6 +13,7 @@ using System.Xml.Linq;
 
 namespace CreateXAFSolutionCommand.Classes {
     public class SolutionCreator {
+        const string sourceSolutionPath = @"c:\Dropbox\work\Templates\MainSolution\FilesToCreateSolution\";
         public void CreateSolution() {
             NewXafSolutionWizard wz = new NewXafSolutionWizard();
 
@@ -45,7 +46,15 @@ namespace CreateXAFSolutionCommand.Classes {
                     throw new ArgumentOutOfRangeException();
             }
             model.Lang = DevExpress.VisualStudioInterop.Base.Language.CSharp;
-            model.OrmIsXpo = true;
+            switch(dataSolution.ORMType) {
+                case ORMEnum.XPO:
+                    model.OrmIsXpo = true;
+                    break;
+                case ORMEnum.EF:
+                    model.OrmIsEntityFrameworkCore = true;
+                    break;
+            }
+
             model.CollectModules(true);
             model.WebApiPlatformSelected = false;
 
@@ -73,10 +82,11 @@ namespace CreateXAFSolutionCommand.Classes {
             catch(Exception e) {
 
             }
-
-
-            CopyClasses(solutionDirectory, mySolutionName, dataSolution);
-            AddUpdaterToSolution(solutionDirectory, mySolutionName);
+            CopyServiceClasses(solutionDirectory, mySolutionName, dataSolution);
+            if(dataSolution.ORMType == ORMEnum.XPO) {
+                CopyXPOClasses(solutionDirectory, mySolutionName, dataSolution);
+                AddXPOUpdaterToSolution(solutionDirectory, mySolutionName);
+            }
             FixConfig(solutionDirectory, mySolutionName, dataSolution);
             CreateGit(solutionDirectory);
         }
@@ -93,20 +103,32 @@ namespace CreateXAFSolutionCommand.Classes {
             modulesDictionary.Add(ModulesEnum.Validation, typeof(ValidationModuleInfo));
             modulesDictionary.Add(ModulesEnum.Scheduler, typeof(SchedulerModuleInfo));
             modulesDictionary.Add(ModulesEnum.Dashboards, typeof(DashboardsModuleInfo));
-            modulesDictionary.Add(ModulesEnum.AuditTrail, typeof(AuditTrailModuleInfo));
+            if(dataSolution.ORMType == ORMEnum.XPO) {
+                modulesDictionary.Add(ModulesEnum.AuditTrail, typeof(AuditTrailModuleInfo));
+            } else {
+                modulesDictionary.Add(ModulesEnum.AuditTrail, typeof(AuditTrailModuleEFCoreInfo));
+            }
             modulesDictionary.Add(ModulesEnum.TreeList, typeof(TreeListEditorsModuleInfo));
             modulesDictionary.Add(ModulesEnum.Notification, typeof(NotificationsModuleInfo));
             modulesDictionary.Add(ModulesEnum.ViewVariant, typeof(ViewVariantsModuleInfo));
             modulesDictionary.Add(ModulesEnum.StateMachine, typeof(StateMachineModuleInfo));
 
+
             foreach(var module in dataSolution.Modules) {
                 var moduleInfo = modulesDictionary[module];
-                var realModule = model.AllModules.First(x => x.GetType() == moduleInfo);
+                var realModule = model.AllModules.FirstOrDefault(x => x.GetType() == moduleInfo);
+                if(realModule == null)
+                    continue;
                 ((ISelectable)realModule).Selected = true;
 
             }
         }
-        public void CopyClasses(string folderName, string solutionName, DataForSolution dataSolution) {
+        public void CopyServiceClasses(string folderName, string solutionName, DataForSolution dataSolution) {
+            File.Copy(Path.Combine(sourceSolutionPath, @"delbinobj.bat"), Path.Combine(folderName, @"delbinobj.bat"));
+            File.Copy(Path.Combine(sourceSolutionPath, @".gitignore"), Path.Combine(folderName, @".gitignore"));
+            File.Copy(Path.Combine(sourceSolutionPath, @"createGit.bat"), Path.Combine(folderName, @"createGit.bat"));
+        }
+        public void CopyXPOClasses(string folderName, string solutionName, DataForSolution dataSolution) {
 
             List<Tuple<String, string>> addedFiles = new List<Tuple<String, string>>();
             var modulePath = Path.Combine(folderName, solutionName + ".Module");
@@ -114,7 +136,7 @@ namespace CreateXAFSolutionCommand.Classes {
             var moduleWebPath = Path.Combine(folderName, solutionName + ".Module.Web");
             var moduleBlazorCorePath = Path.Combine(folderName, solutionName + ".Blazor.Server");
             var moduleWinCorePath = Path.Combine(folderName, solutionName + ".Win");
-            var sourceSolutionPath = @"c:\Dropbox\work\Templates\MainSolution\FilesToCreateSolution\";
+
             var modulecsProjName = Path.Combine(folderName, solutionName + ".Module", solutionName + ".Module.csproj");
             var wincsProjName = Path.Combine(folderName, solutionName + ".Module.Win", solutionName + ".Module.Win.csproj");
             var webcsProjName = Path.Combine(folderName, solutionName + ".Module.Web", solutionName + ".Module.Web.csproj");
@@ -150,9 +172,7 @@ namespace CreateXAFSolutionCommand.Classes {
                 addedFiles.Add(new Tuple<string, string>(@"Controllers\ClearReportCacheController.cs", modulecsProjName));
             }
 
-            File.Copy(Path.Combine(sourceSolutionPath, @"delbinobj.bat"), Path.Combine(folderName, @"delbinobj.bat"));
-            File.Copy(Path.Combine(sourceSolutionPath, @".gitignore"), Path.Combine(folderName, @".gitignore"));
-            File.Copy(Path.Combine(sourceSolutionPath, @"createGit.bat"), Path.Combine(folderName, @"createGit.bat"));
+
             if(dataSolution.Type == ProjectTypeEnum.Framework) {
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWin.cs"), Path.Combine(moduleWinPath, @"Controllers\CustomControllerWin.cs"));
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWeb.cs"), Path.Combine(moduleWebPath, @"Controllers\CustomControllerWeb.cs"));
@@ -192,7 +212,7 @@ namespace CreateXAFSolutionCommand.Classes {
             }
 
         }
-        public void AddUpdaterToSolution(string folderName, string solutionName) {
+        public void AddXPOUpdaterToSolution(string folderName, string solutionName) {
             var updaterPath = Path.Combine(folderName, solutionName + @".Module\Module.cs");
             string text = File.ReadAllText(updaterPath);
             text = text.Replace("using DevExpress.ExpressApp;", "using DevExpress.ExpressApp;\r\nusing dxTestSolution.Module.DatabaseUpdate;");
