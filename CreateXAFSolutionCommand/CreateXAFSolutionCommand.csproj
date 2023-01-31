@@ -64,10 +64,10 @@
     <Reference Include="DataForSolution">
       <HintPath>..\..\DXTicketsBase\DXTicketBase\DataForSolution\bin\Release\DataForSolution.dll</HintPath>
     </Reference>
-    <Reference Include="DevExpress.ExpressApp.TemplateWizard.v22.1, Version=22.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+    <Reference Include="DevExpress.ExpressApp.TemplateWizard.v22.2, Version=22.2.4.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="DevExpress.VisualStudioInterop.v22.1.Base, Version=22.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+    <Reference Include="DevExpress.VisualStudioInterop.v22.2.Base, Version=22.2.4.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.Build" />
