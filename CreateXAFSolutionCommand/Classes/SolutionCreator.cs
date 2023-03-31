@@ -127,6 +127,7 @@ namespace CreateXAFSolutionCommand.Classes {
         }
         public void CopyServiceClasses(string folderName, string solutionName, DataForSolution dataSolution) {
             File.Copy(Path.Combine(sourceSolutionPath, @"delbinobj.bat"), Path.Combine(folderName, @"delbinobj.bat"));
+            File.Copy(Path.Combine(sourceSolutionPath, @"delbinobjWOVS.bat"), Path.Combine(folderName, @"delbinobjWOVS.bat"));
             File.Copy(Path.Combine(sourceSolutionPath, @".gitignore"), Path.Combine(folderName, @".gitignore"));
             File.Copy(Path.Combine(sourceSolutionPath, @"createGit.bat"), Path.Combine(folderName, @"createGit.bat"));
         }
