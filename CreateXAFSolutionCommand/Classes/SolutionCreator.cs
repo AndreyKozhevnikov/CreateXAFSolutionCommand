@@ -38,6 +38,10 @@ namespace CreateXAFSolutionCommand.Classes {
                     model.BlazorPlatformSelected = true;
                     model.WinPlatformSelected = true;
                     model.NetCoreMode = true;
+                    if (dataSolution.HasWebAPI) {
+                        model.WebApiPlatformSelected = true;
+                        model.WebApiIntegratedModeSelected = false;
+                    }
                     break;
                 case ProjectTypeEnum.Framework:
                     model.WinPlatformSelected = true;
@@ -58,7 +62,7 @@ namespace CreateXAFSolutionCommand.Classes {
             }
 
             model.CollectModules(true);
-            model.WebApiPlatformSelected = false;
+          //  model.WebApiPlatformSelected = false;
 
             SelectModules(dataSolution, model);
             model.SolutionName = mySolutionName;
@@ -88,6 +92,9 @@ namespace CreateXAFSolutionCommand.Classes {
             CopyBOClasses(solutionDirectory, mySolutionName, dataSolution, dataSolution.ORMType);
             if (dataSolution.ORMType == ORMEnum.EF) {
                 AddBOToDBContext(solutionDirectory, mySolutionName);
+                if (dataSolution.HasWebAPI) {
+                    AddBOToWebApi(solutionDirectory, mySolutionName);
+                }
             }
             AddUpdaterToSolution(solutionDirectory, mySolutionName);
             FixConfig(solutionDirectory, mySolutionName, dataSolution);
@@ -228,6 +235,17 @@ namespace CreateXAFSolutionCommand.Classes {
         }
 
 
+        public void AddBOToWebApi(string folderName, string solutionName) {
+            var dbContextPah = Path.Combine(folderName, solutionName + string.Format(@".WebApi\Startup.cs", solutionName));
+            string text = File.ReadAllText(dbContextPah);
+            text = text.Replace("using Microsoft.EntityFrameworkCore;", "using Microsoft.EntityFrameworkCore;\r\nusing dxTestSolution.Module.BusinessObjects;");
+            text = text.Replace("options.BusinessObject<YourBusinessObject>();",
+              @"options.BusinessObject<YourBusinessObject>();
+                options.BusinessObject<Contact>();
+                options.BusinessObject<MyTask>();
+");
+            File.WriteAllText(dbContextPah, text);
+        }
         public void AddBOToDBContext(string folderName, string solutionName) {
             var dbContextPah = Path.Combine(folderName, solutionName + string.Format(@".Module\BusinessObjects\{0}DBContext.cs",solutionName));
             string text = File.ReadAllText(dbContextPah);
