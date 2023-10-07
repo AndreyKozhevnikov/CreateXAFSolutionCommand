@@ -92,9 +92,9 @@ namespace CreateXAFSolutionCommand.Classes {
             CopyBOClasses(solutionDirectory, mySolutionName, dataSolution, dataSolution.ORMType);
             if (dataSolution.ORMType == ORMEnum.EF) {
                 AddBOToDBContext(solutionDirectory, mySolutionName);
-                if (dataSolution.HasWebAPI) {
-                    AddBOToWebApi(solutionDirectory, mySolutionName);
-                }
+            }
+            if (dataSolution.HasWebAPI) {
+                AddBOToWebApi(solutionDirectory, mySolutionName);
             }
             AddUpdaterToSolution(solutionDirectory, mySolutionName);
             FixConfig(solutionDirectory, mySolutionName, dataSolution);
@@ -238,7 +238,7 @@ namespace CreateXAFSolutionCommand.Classes {
         public void AddBOToWebApi(string folderName, string solutionName) {
             var dbContextPah = Path.Combine(folderName, solutionName + string.Format(@".WebApi\Startup.cs", solutionName));
             string text = File.ReadAllText(dbContextPah);
-            text = text.Replace("using Microsoft.EntityFrameworkCore;", "using Microsoft.EntityFrameworkCore;\r\nusing dxTestSolution.Module.BusinessObjects;");
+            text = text.Replace("using Microsoft.OpenApi.Models;", "using Microsoft.OpenApi.Models;\r\nusing dxTestSolution.Module.BusinessObjects;");
             text = text.Replace("options.BusinessObject<YourBusinessObject>();",
               @"options.BusinessObject<YourBusinessObject>();
                 options.BusinessObject<Contact>();
