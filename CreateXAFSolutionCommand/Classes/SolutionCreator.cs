@@ -85,14 +85,14 @@ namespace CreateXAFSolutionCommand.Classes {
 
             }
             CopyServiceClasses(solutionDirectory, mySolutionName, dataSolution);
-            switch (dataSolution.ORMType) {
-                case ORMEnum.XPO:
-                    CopyXPOClasses(solutionDirectory, mySolutionName, dataSolution);
-                    break;
-                case ORMEnum.EF:
-                    CopyEFClasses(solutionDirectory, mySolutionName, dataSolution);
-                    break;
-            }
+            //switch (dataSolution.ORMType) {
+            //    case ORMEnum.XPO:
+            CopyBOClasses(solutionDirectory, mySolutionName, dataSolution, dataSolution.ORMType);
+            //        break;
+            //    case ORMEnum.EF:
+            //        CopyEFClasses(solutionDirectory, mySolutionName, dataSolution);
+            //        break;
+            //}
             AddUpdaterToSolution(solutionDirectory, mySolutionName);
             FixConfig(solutionDirectory, mySolutionName, dataSolution);
             CreateGit(solutionDirectory);
@@ -136,10 +136,8 @@ namespace CreateXAFSolutionCommand.Classes {
             File.Copy(Path.Combine(sourceSolutionPath, @".gitignore"), Path.Combine(folderName, @".gitignore"));
             File.Copy(Path.Combine(sourceSolutionPath, @"createGit.bat"), Path.Combine(folderName, @"createGit.bat"));
         }
-        public void CopyEFClasses(string folderName, string solutionName, DataForSolution dataSolution) {
 
-        }
-        public void CopyXPOClasses(string folderName, string solutionName, DataForSolution dataSolution) {
+        public void CopyBOClasses(string folderName, string solutionName, DataForSolution dataSolution, ORMEnum ormType) {
 
             List<Tuple<String, string>> addedFiles = new List<Tuple<String, string>>();
             var modulePath = Path.Combine(folderName, solutionName + ".Module");
@@ -161,15 +159,22 @@ namespace CreateXAFSolutionCommand.Classes {
 
 
             var fileNames = new List<string>();
-            fileNames.Add(@"BusinessObjects\Contact.cs");
-            fileNames.Add(@"BusinessObjects\MyTask.cs");
-            fileNames.Add(@"BusinessObjects\CustomClass.cs");
+            switch (ormType) {
+                case ORMEnum.XPO:
+                    fileNames.Add(@"BusinessObjects\Contact.cs");
+                    fileNames.Add(@"BusinessObjects\MyTask.cs");
+                    fileNames.Add(@"BusinessObjects\CustomClass.cs");
+                    break;
+                case ORMEnum.EF:
+                    fileNames.Add(@"BusinessObjects\EFBusinessClasses.cs");
+          
+                    break;
+            }
             foreach (string file in fileNames) {
                 var filePath = Path.Combine(modulePath, file);
                 File.Copy(Path.Combine(sourceSolutionPath, file), filePath);
                 //  addedFiles.Add(file);
                 addedFiles.Add(new Tuple<string, string>(file, modulecsProjName));
-
             }
 
             File.Copy(Path.Combine(sourceSolutionPath, @"BusinessObjects\MyUpdater.cs"), Path.Combine(folderName, solutionName + @".Module\DatabaseUpdate\MyUpdater.cs"));
