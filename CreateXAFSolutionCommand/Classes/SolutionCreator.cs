@@ -27,12 +27,12 @@ namespace CreateXAFSolutionCommand.Classes {
             var dxAssemblyVersion = dxAssembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             model.FullXafVersion = dxAssemblyVersion;
             model.XafVersion = dxAssemblyVersion.Substring(0, 4);
-            if(dataSolution.HasSecurity) {
+            if (dataSolution.HasSecurity) {
                 model.AuthenticationIsStandard = true;
                 model.ClientLevelIntegratedSelected = true;
                 model.UseSecurity = true;
             }
-            switch(dataSolution.Type) {
+            switch (dataSolution.Type) {
                 case ProjectTypeEnum.Core:
                     model.BlazorMode = true;
                     model.BlazorPlatformSelected = true;
@@ -48,7 +48,7 @@ namespace CreateXAFSolutionCommand.Classes {
                     throw new ArgumentOutOfRangeException();
             }
             model.Lang = DevExpress.VisualStudioInterop.Base.Language.CSharp;
-            switch(dataSolution.ORMType) {
+            switch (dataSolution.ORMType) {
                 case ORMEnum.XPO:
                     model.OrmIsXpo = true;
                     break;
@@ -81,14 +81,19 @@ namespace CreateXAFSolutionCommand.Classes {
                 wz.RunFinished();
                 dte.Solution.SaveAs(Path.Combine(solutionDirectory, mySolutionName + ".sln"));
             }
-            catch(Exception e) {
+            catch (Exception e) {
 
             }
             CopyServiceClasses(solutionDirectory, mySolutionName, dataSolution);
-            if(dataSolution.ORMType == ORMEnum.XPO) {
-                CopyXPOClasses(solutionDirectory, mySolutionName, dataSolution);
-                AddXPOUpdaterToSolution(solutionDirectory, mySolutionName);
+            switch (dataSolution.ORMType) {
+                case ORMEnum.XPO:
+                    CopyXPOClasses(solutionDirectory, mySolutionName, dataSolution);
+                    break;
+                case ORMEnum.EF:
+                    CopyEFClasses(solutionDirectory, mySolutionName, dataSolution);
+                    break;
             }
+            AddUpdaterToSolution(solutionDirectory, mySolutionName);
             FixConfig(solutionDirectory, mySolutionName, dataSolution);
             CreateGit(solutionDirectory);
         }
@@ -105,7 +110,7 @@ namespace CreateXAFSolutionCommand.Classes {
             modulesDictionary.Add(ModulesEnum.Validation, typeof(ValidationModuleInfo));
             modulesDictionary.Add(ModulesEnum.Scheduler, typeof(SchedulerModuleInfo));
             modulesDictionary.Add(ModulesEnum.Dashboards, typeof(DashboardsModuleInfo));
-            if(dataSolution.ORMType == ORMEnum.XPO) {
+            if (dataSolution.ORMType == ORMEnum.XPO) {
                 modulesDictionary.Add(ModulesEnum.AuditTrail, typeof(AuditTrailModuleInfo));
             } else {
                 modulesDictionary.Add(ModulesEnum.AuditTrail, typeof(AuditTrailModuleEFCoreInfo));
@@ -116,10 +121,10 @@ namespace CreateXAFSolutionCommand.Classes {
             modulesDictionary.Add(ModulesEnum.StateMachine, typeof(StateMachineModuleInfo));
 
 
-            foreach(var module in dataSolution.Modules) {
+            foreach (var module in dataSolution.Modules) {
                 var moduleInfo = modulesDictionary[module];
                 var realModule = model.AllModules.FirstOrDefault(x => x.GetType() == moduleInfo);
-                if(realModule == null)
+                if (realModule == null)
                     continue;
                 ((ISelectable)realModule).Selected = true;
 
@@ -130,6 +135,9 @@ namespace CreateXAFSolutionCommand.Classes {
             File.Copy(Path.Combine(sourceSolutionPath, @"delbinobjWOVS.bat"), Path.Combine(folderName, @"delbinobjWOVS.bat"));
             File.Copy(Path.Combine(sourceSolutionPath, @".gitignore"), Path.Combine(folderName, @".gitignore"));
             File.Copy(Path.Combine(sourceSolutionPath, @"createGit.bat"), Path.Combine(folderName, @"createGit.bat"));
+        }
+        public void CopyEFClasses(string folderName, string solutionName, DataForSolution dataSolution) {
+
         }
         public void CopyXPOClasses(string folderName, string solutionName, DataForSolution dataSolution) {
 
@@ -156,7 +164,7 @@ namespace CreateXAFSolutionCommand.Classes {
             fileNames.Add(@"BusinessObjects\Contact.cs");
             fileNames.Add(@"BusinessObjects\MyTask.cs");
             fileNames.Add(@"BusinessObjects\CustomClass.cs");
-            foreach(string file in fileNames) {
+            foreach (string file in fileNames) {
                 var filePath = Path.Combine(modulePath, file);
                 File.Copy(Path.Combine(sourceSolutionPath, file), filePath);
                 //  addedFiles.Add(file);
@@ -170,43 +178,45 @@ namespace CreateXAFSolutionCommand.Classes {
             addedFiles.Add(new Tuple<string, string>(@"Controllers\CustomControllers.cs", modulecsProjName));
 
 
-            if(dataSolution.Modules.Contains(ModulesEnum.Report)) {
+            if (dataSolution.Modules.Contains(ModulesEnum.Report)) {
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\ClearReportCacheController.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\ClearReportCacheController.cs"));
                 addedFiles.Add(new Tuple<string, string>(@"Controllers\ClearReportCacheController.cs", modulecsProjName));
             }
 
 
-            if(dataSolution.Type == ProjectTypeEnum.Framework) {
+            if (dataSolution.Type == ProjectTypeEnum.Framework) {
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWin.cs"), Path.Combine(moduleWinPath, @"Controllers\CustomControllerWin.cs"));
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWeb.cs"), Path.Combine(moduleWebPath, @"Controllers\CustomControllerWeb.cs"));
                 //addedFiles.Add(new Tuple<string, string>(@"Controllers\CustomControllerWin.cs", wincsProjName));
                 //addedFiles.Add(new Tuple<string, string>(@"Controllers\CustomControllerWeb.cs", webcsProjName));
             }
-            if(dataSolution.Type == ProjectTypeEnum.Core) {
+            if (dataSolution.Type == ProjectTypeEnum.Core) {
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerWin.cs"), Path.Combine(moduleWinCorePath, @"Controllers\CustomControllerWin.cs"));
+                File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\GridViewControllerWin.cs"), Path.Combine(moduleWinCorePath, @"Controllers\GridViewControllerWin.cs"));
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\CustomControllerBlazor.cs"), Path.Combine(moduleBlazorCorePath, @"Controllers\CustomControllerBlazor.cs"));
+                File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\GridViewControllerBlazor.cs"), Path.Combine(moduleBlazorCorePath, @"Controllers\GridViewControllerBlazor.cs"));
             }
-            if(dataSolution.Type == ProjectTypeEnum.Framework) {
+            if (dataSolution.Type == ProjectTypeEnum.Framework) {
                 AddFilesToCSprojFiles(addedFiles);
             }
         }
 
         void AddFilesToCSprojFiles(List<Tuple<string, string>> files) {
             var csprojDict = new Dictionary<string, List<string>>();
-            foreach(var file in files) {
-                if(!csprojDict.ContainsKey(file.Item2)) {
+            foreach (var file in files) {
+                if (!csprojDict.ContainsKey(file.Item2)) {
                     csprojDict[file.Item2] = new List<string>();
                 }
                 csprojDict[file.Item2].Add(file.Item1);
             }
 
-            foreach(var csproj in csprojDict) {
+            foreach (var csproj in csprojDict) {
                 var csprojName = csproj.Key;
                 var xFile = XDocument.Load(csprojName);
                 var itemGroups = xFile.Root.Elements().Where(x => x.Name.LocalName == "ItemGroup");
                 var itemGroup = itemGroups.Where(x => x.Elements().Where(y => y.Name.LocalName == "Compile").Count() > 0).FirstOrDefault();
                 var itemGroupFirstElement = itemGroup.Elements().First();
-                foreach(var file in csproj.Value) {
+                foreach (var file in csproj.Value) {
                     var fileElement = new XElement(itemGroupFirstElement);
                     fileElement.Attribute("Include").Value = file;
                     itemGroup.Add(fileElement);
@@ -215,7 +225,7 @@ namespace CreateXAFSolutionCommand.Classes {
             }
 
         }
-        public void AddXPOUpdaterToSolution(string folderName, string solutionName) {
+        public void AddUpdaterToSolution(string folderName, string solutionName) {
             var updaterPath = Path.Combine(folderName, solutionName + @".Module\Module.cs");
             string text = File.ReadAllText(updaterPath);
             text = text.Replace("using DevExpress.ExpressApp;", "using DevExpress.ExpressApp;\r\nusing dxTestSolution.Module.DatabaseUpdate;");
@@ -226,7 +236,7 @@ namespace CreateXAFSolutionCommand.Classes {
             List<string> configFiles = new List<string>();
             string dataBaseName;
             DataBaseCreatorLib.DataBaseCreator.CreateSQLDataBaseIfNotExists(solutionName, out dataBaseName);
-            switch(dataSolution.Type) {
+            switch (dataSolution.Type) {
                 case ProjectTypeEnum.Core:
                     var configPath = Path.Combine(folderName, solutionName + ".Blazor.Server", "appsettings.json");
                     configFiles.Add(configPath);
@@ -241,7 +251,7 @@ namespace CreateXAFSolutionCommand.Classes {
                     break;
 
             }
-            foreach(var file in configFiles) {
+            foreach (var file in configFiles) {
                 string text = File.ReadAllText(file);
                 string intialText = string.Format("Initial Catalog={0}", solutionName);
                 string newText = string.Format("Initial Catalog={0}", dataBaseName);
@@ -256,7 +266,7 @@ namespace CreateXAFSolutionCommand.Classes {
         public T DeserializeToObject<T>(string filepath) where T : class {
             System.Xml.Serialization.XmlSerializer ser = new System.Xml.Serialization.XmlSerializer(typeof(T));
 
-            using(StreamReader sr = new StreamReader(filepath)) {
+            using (StreamReader sr = new StreamReader(filepath)) {
                 return (T)ser.Deserialize(sr);
             }
         }
