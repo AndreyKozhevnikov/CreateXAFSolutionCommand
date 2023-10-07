@@ -85,14 +85,10 @@ namespace CreateXAFSolutionCommand.Classes {
 
             }
             CopyServiceClasses(solutionDirectory, mySolutionName, dataSolution);
-            //switch (dataSolution.ORMType) {
-            //    case ORMEnum.XPO:
             CopyBOClasses(solutionDirectory, mySolutionName, dataSolution, dataSolution.ORMType);
-            //        break;
-            //    case ORMEnum.EF:
-            //        CopyEFClasses(solutionDirectory, mySolutionName, dataSolution);
-            //        break;
-            //}
+            if (dataSolution.ORMType == ORMEnum.EF) {
+                AddBOToDBContext(solutionDirectory, mySolutionName);
+            }
             AddUpdaterToSolution(solutionDirectory, mySolutionName);
             FixConfig(solutionDirectory, mySolutionName, dataSolution);
             CreateGit(solutionDirectory);
@@ -229,6 +225,19 @@ namespace CreateXAFSolutionCommand.Classes {
                 xFile.Save(csprojName);
             }
 
+        }
+
+
+        public void AddBOToDBContext(string folderName, string solutionName) {
+            var dbContextPah = Path.Combine(folderName, solutionName + string.Format(@".Module\BusinessObjects\{0}DBContext.cs",solutionName));
+            string text = File.ReadAllText(dbContextPah);
+            text = text.Replace("using Microsoft.EntityFrameworkCore;", "using Microsoft.EntityFrameworkCore;\r\nusing dxTestSolution.Module.BusinessObjects;");
+            text = text.Replace("public DbSet<ModuleInfo> ModulesInfo { get; set; }",
+                @"public DbSet<ModuleInfo> ModulesInfo { get; set; }
+                  public DbSet<MyTask> MyTasks { get; set; }
+                  public DbSet<Contact> Contacts { get; set; }
+");
+            File.WriteAllText(dbContextPah, text);
         }
         public void AddUpdaterToSolution(string folderName, string solutionName) {
             var updaterPath = Path.Combine(folderName, solutionName + @".Module\Module.cs");
