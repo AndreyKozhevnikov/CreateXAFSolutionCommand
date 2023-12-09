@@ -274,6 +274,10 @@ namespace CreateXAFSolutionCommand.Classes {
                     configFiles.Add(configPath);
                     var configPathWin = Path.Combine(folderName, solutionName + ".Win", "app.config");
                     configFiles.Add(configPathWin);
+                    if (dataSolution.HasWebAPI) {
+                        var configPathWebAPI=Path.Combine(folderName, solutionName + ".WebApi", "appsettings.json");
+                        configFiles.Add(configPathWebAPI);
+                    }
                     break;
                 case ProjectTypeEnum.Framework:
                     var webconfigPath = Path.Combine(folderName, solutionName + ".Web", "web.config");
