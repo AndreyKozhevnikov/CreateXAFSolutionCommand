@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="CreateXAFSolutionCommand.4c922ed4-f6cb-42e8-942b-74d5a9107d93" Version="23.12.9" Language="en-US" Publisher="Andrey Kozhevnikov" />
+        <Identity Id="CreateXAFSolutionCommand.4c922ed4-f6cb-42e8-942b-74d5a9107d93" Version="24.05.09" Language="en-US" Publisher="Andrey Kozhevnikov" />
         <DisplayName>CreateXAFSolutionCommand</DisplayName>
         <Description xml:space="preserve">Empty VSIX Project.</Description>
     </Metadata>

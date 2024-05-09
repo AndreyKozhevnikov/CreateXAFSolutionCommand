@@ -64,10 +64,10 @@
     <Reference Include="DataForSolution">
       <HintPath>..\..\DXTicketsBase\DXTicketBase\DataForSolution\bin\Release\DataForSolution.dll</HintPath>
     </Reference>
-    <Reference Include="DevExpress.ExpressApp.TemplateWizard.v23.1, Version=23.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+    <Reference Include="DevExpress.ExpressApp.TemplateWizard.v23.2, Version=23.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="DevExpress.VisualStudioInterop.v23.1.Base, Version=23.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+    <Reference Include="DevExpress.VisualStudioInterop.v23.2.Base, Version=23.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.Build" />
@@ -96,6 +96,7 @@
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DataForSolution.dll" />
     <Content Include="Resources\MyCreateXAFCommand.png" />
   </ItemGroup>
   <ItemGroup />
