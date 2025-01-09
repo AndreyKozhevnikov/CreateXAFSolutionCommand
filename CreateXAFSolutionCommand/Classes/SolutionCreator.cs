@@ -38,7 +38,7 @@ namespace CreateXAFSolutionCommand.Classes {
                     model.BlazorPlatformSelected = true;
                     model.WinPlatformSelected = true;
                     model.NetCoreMode = true;
-                    if (dataSolution.HasWebAPI) {
+                    if (dataSolution.HasWebAPISeparate) {
                         model.WebApiPlatformSelected = true;
                         model.WebApiIntegratedModeSelected = false;
                     }
@@ -93,7 +93,7 @@ namespace CreateXAFSolutionCommand.Classes {
             if (dataSolution.ORMType == ORMEnum.EF) {
                 AddBOToDBContext(solutionDirectory, mySolutionName);
             }
-            if (dataSolution.HasWebAPI) {
+            if (dataSolution.HasWebAPISeparate) {
                 AddBOToWebApi(solutionDirectory, mySolutionName);
             }
             AddUpdaterToSolution(solutionDirectory, mySolutionName);
@@ -106,21 +106,21 @@ namespace CreateXAFSolutionCommand.Classes {
         }
         public void SelectModules(DataForSolution dataSolution, ISolutionModel model) {
             Dictionary<ModulesEnum, Type> modulesDictionary = new Dictionary<ModulesEnum, Type>();
-            modulesDictionary.Add(ModulesEnum.FileAttachments, typeof(FileAttachmentsModuleInfo));
-            modulesDictionary.Add(ModulesEnum.ConditionalAppearance, typeof(ConditionalAppearanceModuleInfo));
+            modulesDictionary.Add(ModulesEnum.Files, typeof(FileAttachmentsModuleInfo));
+            modulesDictionary.Add(ModulesEnum.Appearance, typeof(ConditionalAppearanceModuleInfo));
             modulesDictionary.Add(ModulesEnum.Office, typeof(OfficeModuleInfo));
-            modulesDictionary.Add(ModulesEnum.Report, typeof(ReportModuleInfo));
+            modulesDictionary.Add(ModulesEnum.Reports, typeof(ReportModuleInfo));
             modulesDictionary.Add(ModulesEnum.Validation, typeof(ValidationModuleInfo));
             modulesDictionary.Add(ModulesEnum.Scheduler, typeof(SchedulerModuleInfo));
             modulesDictionary.Add(ModulesEnum.Dashboards, typeof(DashboardsModuleInfo));
             if (dataSolution.ORMType == ORMEnum.XPO) {
-                modulesDictionary.Add(ModulesEnum.AuditTrail, typeof(AuditTrailModuleInfo));
+                modulesDictionary.Add(ModulesEnum.Audit, typeof(AuditTrailModuleInfo));
             } else {
-                modulesDictionary.Add(ModulesEnum.AuditTrail, typeof(AuditTrailModuleEFCoreInfo));
+                modulesDictionary.Add(ModulesEnum.Audit, typeof(AuditTrailModuleEFCoreInfo));
             }
             modulesDictionary.Add(ModulesEnum.TreeList, typeof(TreeListEditorsModuleInfo));
-            modulesDictionary.Add(ModulesEnum.Notification, typeof(NotificationsModuleInfo));
-            modulesDictionary.Add(ModulesEnum.ViewVariant, typeof(ViewVariantsModuleInfo));
+            modulesDictionary.Add(ModulesEnum.Notifications, typeof(NotificationsModuleInfo));
+            modulesDictionary.Add(ModulesEnum.Variants, typeof(ViewVariantsModuleInfo));
             modulesDictionary.Add(ModulesEnum.StateMachine, typeof(StateMachineModuleInfo));
 
 
@@ -186,7 +186,7 @@ namespace CreateXAFSolutionCommand.Classes {
             addedFiles.Add(new Tuple<string, string>(@"Controllers\CustomControllers.cs", modulecsProjName));
 
 
-            if (dataSolution.Modules.Contains(ModulesEnum.Report)) {
+            if (dataSolution.Modules.Contains(ModulesEnum.Reports)) {
                 File.Copy(Path.Combine(sourceSolutionPath, @"Controllers\ClearReportCacheController.cs"), Path.Combine(folderName, solutionName + @".Module\Controllers\ClearReportCacheController.cs"));
                 addedFiles.Add(new Tuple<string, string>(@"Controllers\ClearReportCacheController.cs", modulecsProjName));
             }
@@ -274,7 +274,7 @@ namespace CreateXAFSolutionCommand.Classes {
                     configFiles.Add(configPath);
                     var configPathWin = Path.Combine(folderName, solutionName + ".Win", "app.config");
                     configFiles.Add(configPathWin);
-                    if (dataSolution.HasWebAPI) {
+                    if (dataSolution.HasWebAPISeparate) {
                         var configPathWebAPI=Path.Combine(folderName, solutionName + ".WebApi", "appsettings.json");
                         configFiles.Add(configPathWebAPI);
                     }

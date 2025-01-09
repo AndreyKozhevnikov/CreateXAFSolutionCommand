@@ -19,7 +19,7 @@ namespace CreateXAFSolutionCommand.Tests {
             var creator= new SolutionCreator();
             DataForSolution dataSolution = new DataForSolution();
             dataSolution.Modules = new List<ModulesEnum>();
-            dataSolution.Modules.Add(ModulesEnum.ConditionalAppearance);
+            dataSolution.Modules.Add(ModulesEnum.Appearance);
             dataSolution.Modules.Add(ModulesEnum.Office);
 
             var moqModel = new Mock<ISolutionModel>();
